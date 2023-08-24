@@ -3,6 +3,7 @@ import scipy.constants as const
 
 # Constants (CONST.I)
 class m_const():
+
     PI = const.pi
     G = const.gravitational_constant
 
@@ -44,6 +45,7 @@ class m_const():
     EFCOL = 0.8
     EFCOLGN = 0.7
 
+    LSL00 = LSL0 * 4180.0  # definicion de calores y presiones de vapor a 0 K
 
 # Constants (DIMEN.I)
 

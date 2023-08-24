@@ -1,0 +1,51 @@
+from constants import m_const
+
+
+class Main_vars():
+    s = 0
+    Qvapneg = 0.
+    lvapneg = 0
+    aerneg = 0.
+    laerneg = 0
+    llluneg = 0
+    lcrineg = 0.
+    lnieneg = 0.
+    lgraneg = 0.
+    ener = 0.
+    ener1 = 0.
+    ener2 = 0.
+    ener3 = 0.
+    ener4 = 0.
+    ener5 = 0.
+    qv = 0.
+    qg = 0.
+    daitot = 0.
+    lgot = [m_const.NX1, 0]
+    mgot = [m_const.NX1, 0]
+    ngot = [m_const.NZ1, 0]
+    lllu = [m_const.NX1, 0]
+    mllu = [m_const.NX1, 0]
+    nllu = [m_const.NZ1, 0]
+    lcri = [m_const.NX1, 0]
+    mcri = [m_const.NX1, 0]
+    ncri = [m_const.NZ1, 0]
+    lnie = [m_const.NX1, 0]
+    mnie = [m_const.NX1, 0]
+    nnie = [m_const.NZ1, 0]
+    lgra = [m_const.NX1, 0]
+    mgra = [m_const.NX1, 0]
+    ngra = [m_const.NZ1, 0]
+    vapt1 = 0.
+    vapt2 = 0.
+    vapt3 = 0.
+    vapt4 = 0.
+    gott1 = 0.
+    gott2 = 0.
+    gott3 = 0.
+    gott4 = 0.
+    aert1 = 0.
+    aert2 = 0.
+    aert3 = 0.
+    aert4 = 0.
+    totnuc = 0.
+    totmic = 0.
