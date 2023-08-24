@@ -20,6 +20,7 @@ class InitialConditions:
         self.viento_corte()
         self.constantes_T()
         self.condiciones_buen_tiempo()
+        self.recalc_presion_y_tita()
         self.terminal_vel_rain_drop()
         self.terminal_vel_snow()
         self.terminal_vel_granite()
@@ -35,7 +36,7 @@ class InitialConditions:
             yd = 1 / self.TT(zetad)
             integ[k] = integ[k - 1] + ya + 4 * ym + yd
 
-        for k in range(m_const.NZ + 2):
+        for k in range(1, m_const.NZ1 + 2):
             self.basic_struct.Presi0[k] = m_const.P00 * np.exp(
                 -m_const.G / m_const.RD * integ[2 * k] * m_const.DX1 / 4 / 3
             )
@@ -63,7 +64,7 @@ class InitialConditions:
             return a - 77.5 + 50 * (xx / 9000) ** 2
 
     def viento_corte(self):
-        for k in range(m_const.NZ):
+        for k in range(m_const.NZ1):
             zeta = k * m_const.DX1
             if zeta <= 500:
                 self.basic_struct.UU[k] = 0
@@ -87,9 +88,7 @@ class InitialConditions:
             self.basic_struct.VV[k] = self.basic_struct.VV[k] * 0
 
     def constantes_T(self):
-        value_list = [313, 203, -1]
-
-        for k in value_list:
+        for k in range(110, 0, -1):
             self.t_struct.Tk[k] = k - m_const.T0
             self.t_struct.Tvis[k] = 4.9e-8 * self.t_struct.Tk[k] + m_const.VIS0
             if k < 273.15:
@@ -99,7 +98,7 @@ class InitialConditions:
 
             # calores latentes de evaporacion, fusion y sublimacion
             gam = 0.167 + 3.67e-4 * k
-            self.t_struct.Tlvl[k] = m_const.LVL0 * (self.T0 / k) ** gam
+            self.t_struct.Tlvl[k] = m_const.LVL0 * (m_const.T0 / k) ** gam
             self.t_struct.Tlsl[k] = (
                 m_const.LSL0
                 + 0.485 * self.t_struct.Tk[k]
@@ -117,7 +116,6 @@ class InitialConditions:
                 + self.t_struct.Tk[k] * (m_const.A2 + self.t_struct.Tk[k] * aux)
             )
             self.t_struct.Telvs[k] = aux * 100
-
             aux = m_const.B3 + self.t_struct.Tk[k] * (
                 m_const.B4
                 + self.t_struct.Tk[k] * (m_const.B5 + self.t_struct.Tk[k] * m_const.B6)
@@ -129,19 +127,18 @@ class InitialConditions:
             self.t_struct.Tesvs[k] = aux * 100
 
             if k < 220:
-                aux = self.t_struct.Tlvl[220] / m_const.RV * (1 / 220 - 1 / k)
-                self.t_struct.Telvs[k] = self.t_struct.Telvs[220] * np.exp(aux)
-                aux = self.t_struct.Tlvs[220] / m_const.RV * (1 / 220 - 1 / k)
-                self.t_struct.Tesvs[k] = self.t_struct.Tesvs[220] * np.exp(aux)
+                aux = self.t_struct.Tlvl[17] / m_const.RV * (1 / 220 - 1 / k)
+                self.t_struct.Telvs[k] = self.t_struct.Telvs[17] * np.exp(aux)
+                aux = self.t_struct.Tlvs[17] / m_const.RV * (1 / 220 - 1 / k)
+                self.t_struct.Tesvs[k] = self.t_struct.Tesvs[17] * np.exp(aux)
 
             self.t_struct.Eautcn[k] = 10 ** (0.035 * self.t_struct.Tk[k] - 0.7)
             self.t_struct.Eacrcn[k] = np.exp(0.09 * self.t_struct.Tk[k])
 
     def recalc_presion_y_tita(self):
-        Press00 = self.PP2()
-        for k in range(self.nz1):
+        for k in range(m_const.NZ1):
             self.basic_struct.Tita0[k] = (
-                self.basic_struct.Temp0[k] * (m_const.P00 / Press00[k]) ** m_const.KAPA
+                self.basic_struct.Temp0[k] * (m_const.P00 / self.basic_struct.Pres00[k]) ** m_const.KAPA
             )
             self.basic_struct.Pres00[k] = (
                 self.basic_struct.Temp0[k] / self.basic_struct.Tita0[k]
@@ -161,20 +158,19 @@ class InitialConditions:
 
         for i in range(1, m_const.NX1):
             for j in range(1, m_const.NX1):
-                self.Pres1[i, j, 0] = self.Pres1[i, j, 1]
-                self.Pres1[i, j, -1] = self.Pres1[i, j, 1]
-                self.Pres2[i, j, 0] = self.Pres1[i, j, 1]
-                self.Pres2[i, j, -1] = self.Pres1[i, j, 1]
-                self.Titaa1[i, j, 0] = self.Titaa1[i, j, 1]
-                self.Titaa1[i, j, -1] = self.Titaa1[i, j, 1]
-                self.Qvap1[i, j, 0] = self.Qvap1[i, j, 1]
-                self.Qvap1[i, j, -1] = self.Qvap1[i, j, 1]
+                self.gwc.Pres1[i, j, 0] = self.gwc.Pres1[i, j, 1]
+                self.gwc.Pres1[i, j, -1] = self.gwc.Pres1[i, j, 1]
+                self.gwc.Pres2[i, j, 0] = self.gwc.Pres1[i, j, 1]
+                self.gwc.Pres2[i, j, -1] = self.gwc.Pres1[i, j, 1]
+                self.gwc.Titaa1[i, j, 0] = self.gwc.Titaa1[i, j, 1]
+                self.gwc.Titaa1[i, j, -1] = self.gwc.Titaa1[i, j, 1]
+                self.gwc.Qvap1[i, j, 0] = self.gwc.Qvap1[i, j, 1]
+                self.gwc.Qvap1[i, j, -1] = self.gwc.Qvap1[i, j, 1]
 
         Qvaptot = 0
         for k in range(m_const.NZ1):
             Qvaptot += self.basic_struct.Qvap0[k]
             self.basic_struct.Qvaprel[k] = self.basic_struct.Qvap0[k] / Qvaptot
-
         aertot = 0
         for k in range(m_const.NZ1):
             aertot += self.basic_struct.aer0[k]
@@ -210,7 +206,7 @@ class InitialConditions:
         self.basic_struct.Pres00[-1] = m_const.P00
 
     def condiciones_buen_tiempo(self):
-        for k in range(m_const.NZ1 + 2):
+        for k in range(-1, m_const.NZ1 + 2):
             zeta = k * m_const.DX1
             self.basic_struct.Temp0[k] = self.TT(zeta)
             self.basic_struct.Den0[k] = (
@@ -273,12 +269,13 @@ class InitialConditions:
 
             n = int(self.basic_struct.Temp0[k])
             aux = self.basic_struct.Temp0[k] - n
-            elv = self.t_struct.Telvs[n] * (1 - aux) + self.t_struct.Telvs[n + 1] * aux
-
+            partial_elv_1 = self.t_struct.Telvs[n - 202] * (1 - aux)
+            partial_elv_2 = self.t_struct.Telvs[n + 1 - 202] * aux
+            print(self.t_struct.Telvs[n - 202])
+            elv = partial_elv_1 + partial_elv_2
             self.basic_struct.Qvap0[k] = (
                 rel * elv / m_const.RV / self.basic_struct.Temp0[k]
             )
-
             # recalculo de la densidad
             self.basic_struct.Den0[k] += self.basic_struct.Qvap0[k]
 
@@ -315,7 +312,7 @@ class InitialConditions:
             aux = 2.754 * m_const.RHOGRA**0.605
             self.terminal_speed.Vtgra0[2 * k] = (
                 aux
-                / self.t_struct.Tvis(self.basic_struct.Temp0[k]) ** 0.21
+                / self.t_struct.Tvis[int(self.basic_struct.Temp0[k]) - 210] ** 0.21
                 / self.basic_struct.Den0[k] ** 0.395
             )
 
